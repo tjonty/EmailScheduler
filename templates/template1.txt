@@ -1,0 +1,10 @@
+Subject: Meeting Request for {{firstname}} at {{companyname}}
+
+Hi {{firstname}},
+
+I came across {{companyname}} and wanted to reach out about a quick idea that may be relevant for your team.
+
+If it would be helpful, I would love to share a few thoughts tailored to your role as {{jobtitle}}.
+
+Best,
+Your Name

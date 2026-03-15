@@ -1,0 +1,19 @@
+{
+  "name": "untitled-folder",
+  "version": "1.0.0",
+  "description": "CSV-based scheduled email sender using Gmail and GitHub Actions",
+  "main": "src/sendEmails.js",
+  "scripts": {
+    "start": "node src/sendEmails.js",
+    "test-send": "node src/sendEmails.js --test"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "csv-parse": "^6.1.0",
+    "dotenv": "^17.3.1",
+    "nodemailer": "^8.0.2"
+  }
+}
