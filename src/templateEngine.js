@@ -10,6 +10,12 @@ function replacePlaceholders(templateText, rowObject) {
 
   return templateText.replace(/{{\s*([^}]+?)\s*}}/gi, (_, placeholderName) => {
     const normalizedKey = placeholderName.toLowerCase();
+
+    if (!(normalizedKey in normalizedEntries)) {
+      console.warn(`Warning: no value found for placeholder {{${placeholderName}}}`);
+      return "";
+    }
+
     return normalizedEntries[normalizedKey] ?? "";
   });
 }

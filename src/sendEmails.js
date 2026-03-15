@@ -6,7 +6,7 @@ const nodemailer = require("nodemailer");
 
 const { loadContacts } = require("./parseCSV");
 const { replacePlaceholders } = require("./templateEngine");
-const { getSentIndexes, markAsSent } = require("./tracker");
+const { getSentIndexes, markAllAsSent } = require("./tracker");
 
 dotenv.config();
 
@@ -53,7 +53,7 @@ async function sendEmails() {
   const contacts = await loadContacts(contactsPath);
   const templateText = await fs.readFile(templatePath, "utf8");
   const { subjectTemplate, bodyTemplate } = parseTemplateFile(templateText);
-  const sentIndexes = isTestMode ? new Set() : await getSentIndexes();
+  const sentEmails = isTestMode ? new Set() : await getSentIndexes();
 
   if (!subjectTemplate) {
     throw new Error("Missing email subject. Add a 'Subject:' line to the template.");
@@ -70,10 +70,19 @@ async function sendEmails() {
   });
 
   let sentCount = 0;
+  const newlySentEmails = [];
 
   for (const [index, contact] of contacts.entries()) {
-    if (!isTestMode && sentIndexes.has(index)) {
-      console.log(`Skipping row ${index}: already sent.`);
+    const recipientEmail =
+      typeof contact.email === "string" ? contact.email.trim() : "";
+
+    if (!recipientEmail) {
+      console.warn(`Skipping row ${index}: missing email.`);
+      continue;
+    }
+
+    if (!isTestMode && sentEmails.has(recipientEmail)) {
+      console.log(`Skipping row ${index}: already sent to ${recipientEmail}.`);
       continue;
     }
 
@@ -88,23 +97,27 @@ async function sendEmails() {
     try {
       await transporter.sendMail({
         from: GMAIL_USER,
-        to: contact.email,
+        to: recipientEmail,
         subject,
         text: body,
       });
 
-      console.log(`Sent email to ${contact.email} (row ${index}).`);
+      console.log(`Sent email to ${recipientEmail} (row ${index}).`);
 
       if (!isTestMode) {
-        await markAsSent(index);
-        sentIndexes.add(index);
+        newlySentEmails.push(recipientEmail);
+        sentEmails.add(recipientEmail);
       }
 
       sentCount += 1;
     } catch (error) {
-      console.error(`Failed to send email to ${contact.email} (row ${index}).`);
+      console.error(`Failed to send email to ${recipientEmail} (row ${index}).`);
       console.error(error.message);
     }
+  }
+
+  if (!isTestMode && newlySentEmails.length > 0) {
+    await markAllAsSent(newlySentEmails);
   }
 
   console.log(
