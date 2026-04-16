@@ -1,7 +1,5 @@
 name: Send Scheduled Emails
 on:
-  schedule:
-    - cron: '0 14 * * 1-5'
   workflow_dispatch:
 
 jobs:
